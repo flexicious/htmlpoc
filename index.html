@@ -26,54 +26,12 @@
     <link rel="stylesheet" href="http://www.htmltreegrid.com/demo/flexicious/css/flexicious.css" type="text/css" />
 
     <script type="text/javascript" src="examples/js/samples/Simple.js" id="script_Simple"></script>
+    <script type="text/javascript" src="MultiSelectComboBox.js" id="script_Simple"></script>
+    <script type="text/javascript" src="MultiSelectComboBoxEx.js" id="script_Simple"></script>
 
     <link rel="stylesheet" href="http://www.htmltreegrid.com/demo/examples/css/index.css" type="text/css" />
     <script type="text/javascript">
-        (function () {
-            myCompanyNameSpace.SAMPLE_CONFIGS_DETAIL_URLS["simple"] = '';//"http://www.flexicious.com/resources/Ultimate/docs/SimpleGrid.htm";
-
-            myCompanyNameSpace.simple_creationComplete = function (evt) {
-                var grid = evt.target;
-                grid.setDataProvider(myCompanyNameSpace.FlexiciousMockGenerator.instance().getFlatOrgList());
-                grid.addEventListener(this, flexiciousNmsp.FlexDataGrid.EVENT_LOADPREFERENCES, function (event) {
-                    setTimeout(function () {
-                        ////Callback when the preference data is loaded from the server.
-                        if (localStorage.getItem('currentPreferences')) {
-                            var currentPreferences = JSON.parse(localStorage.getItem('currentPreferences'));
-                            grid.setPreferences(currentPreferences["preferences"]);
-                            grid.setSelectedKeys(currentPreferences["seletedKeys"] ? currentPreferences["seletedKeys"] : []);
-                            grid.validateNow();
-                            grid.setVerticalScrollPosition(currentPreferences["verticalScrollPosition"]);
-                            flexiciousNmsp.UIUtils.showMessage("Preferences Loaded!");
-                        }
-                    }, 1000);
-                });
-
-                grid.addEventListener(this, flexiciousNmsp.FlexDataGrid.EVENT_PERSISTPREFERENCES, function (event) {
-                    setTimeout(function () {
-                        ////Callback when the preference data is loaded from the server.
-                        var currentPreferences = {};
-                        currentPreferences["preferences"] = grid.getPreferences();
-                        currentPreferences["verticalScrollPosition"] = grid.getVerticalScrollPosition();
-                        currentPreferences["seletedKeys"] = grid.getSelectedKeys();
-                        localStorage.setItem('currentPreferences', JSON.stringify(currentPreferences));
-                        flexiciousNmsp.UIUtils.showMessage("Preferences Saved!");
-                    }, 1000);
-                });
-
-                //Called when the user clicks on "clear preferences" in the preferences dialog box
-                grid.addEventListener(this, flexiciousNmsp.FlexDataGrid.EVENT_CLEARPREFERENCES, function (event) {
-                    //here you will call a server method to clear preferences, for this demo, we are going to mock this.
-                    setTimeout(function () {
-                        ////Callback when the preference data is loaded from the server.
-                        localStorage.setItem('currentPreferences', JSON.stringify({}));
-                        flexiciousNmsp.UIUtils.showMessage("Preferences Cleared!");
-                    }, 1000);
-                }
-                );
-                grid.loadPreferences();
-            }
-
+        (function () { 
             myCompanyNameSpace.SAMPLE_CONFIGS["simple"] = {
                 id: "grid",
                 enablePrint: false,
@@ -86,8 +44,7 @@
                 horizontalScrollPolicy: "auto",
                 footerDrawTopBorder: true,
                 enablePdf: false,
-                headerRowHeight: "100",
-                onCreationComplete: myCompanyNameSpace.simple_creationComplete,
+                headerRowHeight: "100", 
                 level: {
                     selectedKeyField: "id",
                     enablePaging: true,
@@ -111,7 +68,8 @@
                         {
                             id: "colLegalName", dataField: "legalName", sortCaseInsensitive: true, headerText: "Legal Name of the Organization",
                             headerWordWrap: true, truncateToFit: true, columnLockMode: "left",
-                            filterControl: "MultiSelectComboBox", filterComboBoxBuildFromGrid: true
+                            filterControl: "MultiSelectComboBoxEx", filterComboBoxBuildFromGrid: true,
+                            filterComboBoxWidth:400
                         },
                         {
                             id: "colLine1", dataField: "headquarterAddress.line1", headerText: "Line 1", footerLabel: "Count:",
@@ -166,32 +124,54 @@
         }
 
         myCompanyNameSpace.onLoad = function () {
-
-            if (grid && grid.domElement && grid.domElement.parentNode) {
-                var domParent = grid.domElement.parentNode;
-                var domElement = grid.domElement;
-                grid.kill();
-                domElement.innerHTML = "";
-                domElement.style.width = "99%";
-                domElement.style.height = "99%";
-                flexiciousNmsp.UIUtils.addChild(domParent, domElement);//because kill removes from dom.
-            }
-
             grid = new flexiciousNmsp.FlexDataGrid(document.getElementById("gridContainer"), {
                 dataProvider: [],
                 configuration: myCompanyNameSpace.SAMPLE_CONFIGS['simple']
             });
+            grid.setDataProvider(myCompanyNameSpace.FlexiciousMockGenerator.instance().getFlatOrgList());
+                
+            grid.validateNow();
+            grid.addEventListener(this, flexiciousNmsp.FlexDataGrid.EVENT_LOADPREFERENCES, function (event) {
+                setTimeout(function () {
+                    ////Callback when the preference data is loaded from the server.
+                    if (localStorage.getItem('currentPreferences')) {
+                        var currentPreferences = JSON.parse(localStorage.getItem('currentPreferences'));
+                        grid.setPreferences(currentPreferences["preferences"]);
+                        grid.setSelectedKeys(currentPreferences["seletedKeys"] ? currentPreferences["seletedKeys"] : []);
+                        grid.validateNow();
+                        grid.setVerticalScrollPosition(currentPreferences["verticalScrollPosition"]);
+                        flexiciousNmsp.UIUtils.showMessage("Preferences Loaded!");
+                    }
+                }, 1000);
+            });
 
+            grid.addEventListener(this, flexiciousNmsp.FlexDataGrid.EVENT_PERSISTPREFERENCES, function (event) {
+                ////Callback when the preference data is loaded from the server.
+                    var currentPreferences = {};
+                    currentPreferences["preferences"] = grid.getPreferences();
+                    currentPreferences["verticalScrollPosition"] = grid.getVerticalScrollPosition();
+                    currentPreferences["seletedKeys"] = grid.getSelectedKeys();
+                    localStorage.setItem('currentPreferences', JSON.stringify(currentPreferences));
+                    flexiciousNmsp.UIUtils.showMessage("Preferences Saved!");
+            });
+
+            //Called when the user clicks on "clear preferences" in the preferences dialog box
+            grid.addEventListener(this, flexiciousNmsp.FlexDataGrid.EVENT_CLEARPREFERENCES, function (event) {
+                //here you will call a server method to clear preferences, for this demo, we are going to mock this.
+                ////Callback when the preference data is loaded from the server.
+                localStorage.setItem('currentPreferences', JSON.stringify({}));
+                flexiciousNmsp.UIUtils.showMessage("Preferences Cleared!");
+            }
+            );
+            grid.loadPreferences();
         };
-
-        myCompanyNameSpace.onReload = function () {
-            myCompanyNameSpace.onLoad();
-        }
+                
     </script>
 </head>
 
-<body onload="myCompanyNameSpace.onLoad();myCompanyNameSpace.onReload();">
-    <div id="gridContainer"></div>
+<body onload="myCompanyNameSpace.onLoad()">
+    <button onclick="grid.persistPreferences();window.location='http://google.com'">Save preferences and goto different page</button>
+    <div id="gridContainer" style="width:100%;height:95%"></div>
 </body>
 
 </html>
