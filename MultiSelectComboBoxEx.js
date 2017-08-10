@@ -284,6 +284,17 @@
         return ["MultiSelectComboBoxEx", "UIComponent", "IFilterControl", "IMultiSelectFilterControl", "ISelectFilterControl"];
     };
 
+    function onFilterPageSortChange(evt) {
+        let filterExpression = evt.filter.filterExpressions.length > 0 && evt.filter.filterExpressions[0];
+        if(filterExpression && filterExpression.columnName === "data" && filterExpression.expression && filterExpression.expression != "") {
+            evt.target.getColumns()[1].setHeaderText('(Select All Search Results)');
+        } else {
+            evt.target.getColumns()[1].setHeaderText('(Select All)');
+        }
+        
+        evt.target.rebuildHeader();
+    }
+
     MultiSelectComboBoxEx.prototype.showPopup = function (parent) {
         if (this.popup) {
             this.destroyPopup();
@@ -312,6 +323,7 @@
                     id: 'mscbDataGrid',
                     height: '100%',
                     enableFilters: true,
+                    filterPageSortChange: onFilterPageSortChange,
                     displayOrder: 'pager,filter,header,body,footer',
                     level: {
                         cellBorderFunction: function (cell) {
@@ -320,14 +332,15 @@
                         },
                         columns: [
                             {
-                                type: "checkbox"
+                                type: "checkbox",
+                                headerText: ''
                             },
                             {
                                 dataField: this.dataField,
                                 headerText: "(Select All)",
                                 filterControl: "TextInput",
                                 filterWaterMark: "Search",
-                                filterOperation: flexiciousNmsp.FilterExpression.FILTER_OPERATION_TYPE_BEGINS_WITH,
+                                filterOperation: flexiciousNmsp.FilterExpression.FILTER_OPERATION_TYPE_CONTAINS,
                                 filterComboBoxDataProvider: this.getDataProvider()
                             }
                         ]
@@ -366,7 +379,7 @@
         }
         var okCancel = new flexiciousNmsp.UIComponent("div");
         okCancel.domElement.className = "okCancelDiv";
-        okCancel.domElement.innerHTML = "<div class='okCancel'><span class='okButton'>Ok</span><span class='cancelButton'>Cancel</span></div>";
+        okCancel.domElement.innerHTML = "<div class='okCancel'><span class='clearButton'>ClearFilter</span><span class='okButton'>Ok</span><span class='cancelButton'>Cancel</span></div>";
         if (!this.alwaysVisible)
             container.addChild(okCancel);
         var pt = new flexiciousNmsp.Point(0, 0);
@@ -404,6 +417,11 @@
                 }
                 else if (e.triggerEvent.target.className == "cancelButton") {
                     this.restoreStateAndDestroyPopup();
+                } 
+                else if (e.triggerEvent.target.className == "clearButton") {
+                    this._selectedKeys = [];
+                    this.setValue([]);
+                    this.mscbDataGrid.setSelectedObjects([]);
                 } else if (e.triggerEvent.target == this.getTextBox()) {
                     this.dispatchEvent(new flexiciousNmsp.FlexDataGridEvent("outsideIconClick"))
                 }
