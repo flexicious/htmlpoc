@@ -286,11 +286,18 @@
 
     function onFilterPageSortChange(evt) {
         let filterExpression = evt.filter.filterExpressions.length > 0 && evt.filter.filterExpressions[0];
-        if(filterExpression && filterExpression.columnName === "data" && filterExpression.expression && filterExpression.expression != "") {
-            evt.target.getColumns()[1].setHeaderText('(Select All Search Results)');
-        } else {
-            evt.target.getColumns()[1].setHeaderText('(Select All)');
-        }
+        
+        [].forEach.call(evt.target.getColumns() || [], function(col) {
+            if(col && !col.implementsOrExtends('FlexDataGridCheckBoxColumn')) {
+                if(filterExpression && filterExpression.columnName === "data" && filterExpression.expression && filterExpression.expression != "") {
+                    col.setHeaderText('(Select All Search Results)');
+                } else {
+                    col.setHeaderText('(Select All)');
+                }
+            } else {
+                col.setHeaderText(' ');
+            }
+        })
         
         evt.target.rebuildHeader();
     }
@@ -372,7 +379,16 @@
             this.mscbDataGrid.addEventListener(this, flexiciousNmsp.FlexDataGrid.EVENT_HEADERCLICKED, function (e) {
                 var currentSelectedKeys = e.grid.getSelectedKeys();
                 this._selectedKeys = currentSelectedKeys.length > 0 ? currentSelectedKeys : this._selectedKeys;
-                this.setValue([]);
+
+                var items = [];
+
+                [].forEach.call(currentSelectedKeys, function (o) {
+                    items.push(o.data);
+                });
+
+                this.setValue(items);
+
+                // this.setValue([]);
             });
 
             container.addChild(gridContainer);
