@@ -377,18 +377,25 @@
             });
 
             this.mscbDataGrid.addEventListener(this, flexiciousNmsp.FlexDataGrid.EVENT_HEADERCLICKED, function (e) {
-                var currentSelectedKeys = e.grid.getSelectedKeys();
-                this._selectedKeys = currentSelectedKeys.length > 0 ? currentSelectedKeys : this._selectedKeys;
+                var currentSelectedKeys = e.grid.getSelectedKeys() || [];
+                this._selectedKeys = currentSelectedKeys//.length > 0 ? currentSelectedKeys : this._selectedKeys;
 
-                var items = [];
+                let filterControl = e.target.grid.getFilterContainer().rows[0].filterContainerInterface.filterControls[0];
 
-                [].forEach.call(currentSelectedKeys, function (o) {
-                    items.push(o.data);
-                });
+                if(filterControl.implementsOrExtends('TextInput')) {
+                    if(filterControl.getValue() != '') {
+                        var items = [];
 
-                this.setValue(items);
+                        [].forEach.call(currentSelectedKeys, function (o) {
+                            items.push(o.data);
+                        });
 
-                // this.setValue([]);
+                        this.setValue(items);
+                        return;
+                    }
+                }
+
+                this.setValue([]);
             });
 
             container.addChild(gridContainer);
